@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 
 # Dependencies:
-# g++
-# gdb
 # nvalgrind
+# valgrind
+# gdb
+# g++
 
 set -e
 
+NVALGRIND=~/.local/bin/nvalgrind.sh
 CPP_STD=c++17
 DEFAULT_SRC=main.cpp
 SDEBUG_FLAG=-DDSTDERR
 
-BIN="a.out"
+BIN=a.out
 INPUT=in.txt
 OUTPUT=out.txt
 EXPECTED=exp.txt
@@ -78,7 +80,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 
 FLAGS=(
@@ -95,24 +97,28 @@ fi
 
 if [ $MODE = 1 ]; then
     g++ -O2 "${FLAGS[@]}"
-    time ./"$BIN" < "$INPUT" > "$OUTPUT"
+    time ./$BIN < $INPUT > $OUTPUT
 elif [ $MODE = 2 ]; then
     g++ "${FLAGS[@]}"
-    gdb "$BIN"
+    gdb $BIN
 elif [ $MODE = 3 ]; then
     g++ -O1 "${FLAGS[@]}"
-    nvalgrind -- ./"$BIN" < "$INPUT" > "$OUTPUT"
+    if [ -f $NVALGRIND ]; then
+        $NVALGRIND -- ./$BIN < $INPUT > $OUTPUT
+    else
+        valgrind -- ./$BIN < $INPUT > $OUTPUT
+    fi
 elif [ $MODE = 4 ]; then
     g++ -fsanitize=address,undefined -O1 "${FLAGS[@]}"
-    ./"$BIN" < "$INPUT" > "$OUTPUT"
+    ./$BIN < $INPUT > $OUTPUT
 fi
 
 echo
 
 if [ $COMPARE = 1 ]; then
-    paste "$EXPECTED" "$OUTPUT" | awk -F'\t' '
+    paste $EXPECTED $OUTPUT | awk -F'\t' '
       $1 != $2 {printf ":%d:\n%s\n%s\n", NR, $1, $2}
     '
 else
-    cat "$OUTPUT"
+    cat $OUTPUT
 fi

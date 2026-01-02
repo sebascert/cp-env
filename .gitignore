@@ -7,4 +7,5 @@
 
 !run.sh
 
-!tp/
+!clean_template.cpp
+!print_template.cpp
