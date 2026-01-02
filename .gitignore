@@ -1,0 +1,10 @@
+*
+
+!.gitignore
+
+!.vimrc
+!.nvim_cp_profile
+
+!run.sh
+
+!tp/
